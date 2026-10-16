@@ -1,0 +1,19 @@
+# Build
+target/
+HELP.md
+
+# IDEs
+.idea/
+*.iml
+.vscode/
+.classpath
+.project
+.settings/
+
+# Credenciais e configuração local (NUNCA versionar)
+config/local.properties
+.env
+
+# Outros
+*.log
+.DS_Store

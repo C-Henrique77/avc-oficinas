@@ -1,0 +1,5 @@
+# Copie este arquivo para config/local.properties e preencha com os dados do banco.
+# O arquivo config/local.properties esta no .gitignore: NAO sera versionado.
+DB_URL=jdbc:postgresql://localhost:5432/oficinas
+DB_USER=troque_pelo_usuario
+DB_PASSWORD=troque_pela_senha
