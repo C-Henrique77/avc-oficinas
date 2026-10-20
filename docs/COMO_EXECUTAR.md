@@ -13,22 +13,20 @@ Confira no terminal: `java -version` e `mvn -version`.
 
 ## 2. Banco de dados
 
-1. Crie um banco chamado `oficinas` (ou use o nome do banco oficial fornecido pela professora).
-2. Carregue o banco:
-   - **Banco oficial:** execute o script que a professora disponibilizou.
-   - **Banco de exemplo (só para desenvolver):** execute `sql/schema-exemplo.sql`.
+1. Crie um banco chamado `avc_oficinas`.
+2. Conecte nele e execute o script oficial da professora, que está em `sql/02_inscricao_oficinas.sql` (cria as tabelas
+   `participantes`, `oficinas` e `inscricoes` e insere os dados iniciais).
 
    Pelo terminal (ajuste usuário e caminho):
 
    ```
-   psql -U postgres -c "CREATE DATABASE oficinas"
-   psql -U postgres -d oficinas -f sql/schema-exemplo.sql
+   psql -U postgres -c "CREATE DATABASE avc_oficinas"
+   psql -U postgres -d avc_oficinas -f sql/02_inscricao_oficinas.sql
    ```
 
-   Pelo pgAdmin: clique com o botão direito no banco `oficinas` > Query Tool > abra o arquivo `.sql` > execute.
+   Pelo pgAdmin: clique com o botão direito no banco `avc_oficinas` > Query Tool > abra o arquivo `.sql` > execute.
 
-> Se os nomes de tabelas/colunas do banco oficial forem diferentes dos do exemplo, ajuste **somente** os SQLs
-> dentro das classes `*Repository` (e o texto das situações em `SituacaoInscricao`, se necessário).
+> O script cria as tabelas do zero: rode uma vez só. Para recomeçar, apague o banco (`DROP DATABASE avc_oficinas`) e crie de novo.
 
 ## 3. Credenciais (nunca vão para o Git)
 
@@ -42,7 +40,7 @@ cp config/local.properties.example config/local.properties        (Linux/macOS)
 Conteúdo de `config/local.properties`:
 
 ```
-DB_URL=jdbc:postgresql://localhost:5432/oficinas
+DB_URL=jdbc:postgresql://localhost:5432/avc_oficinas
 DB_USER=seu_usuario
 DB_PASSWORD=sua_senha
 ```
