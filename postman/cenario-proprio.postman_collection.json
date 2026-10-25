@@ -1,0 +1,371 @@
+{
+  "info": {
+    "name": "AVC Oficinas - Cenario proprio (consistencia das vagas)",
+    "description": "Cenario proprio do grupo (Tema 2). Por que e relevante: percorre inscricao -> lotacao -> cancelamento -> cancelamento repetido -> exclusao com historico e confere, em cada passo, que o numero de vagas da oficina nunca fica negativo nem passa da capacidade. Isso prova de ponta a ponta que registrar+consumir vaga e cancelar+devolver vaga acontecem na mesma transacao e que os erros nao deixam alteracao parcial.\n\nPre-requisitos: API rodando em http://localhost:8080 e participantes de id 1 e 2 existentes no banco (ajuste as variaveis participanteId1/participanteId2 se o banco oficial usar outros ids). Rode a colecao inteira (Runner) em ordem.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "1 - Cadastrar oficina com 1 unica vaga",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status 201 (criada)', () => pm.response.to.have.status(201));",
+              "const o = pm.response.json();",
+              "pm.collectionVariables.set('oficinaId', o.id);",
+              "pm.test('Nasce com todas as vagas livres (1 de 1)', () => { pm.expect(o.capacidade).to.eql(1); pm.expect(o.vagasDisponiveis).to.eql(1); });"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/oficinas",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "oficinas"
+          ]
+        },
+        "description": "Cria uma oficina de capacidade 1 para o cenario. O id fica salvo na variavel oficinaId.",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"titulo\": \"Oficina do cenario proprio (Postman)\",\n  \"capacidade\": 1\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "2 - Inscrever o participante 1 (consome a unica vaga)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status 201 (criada)', () => pm.response.to.have.status(201));",
+              "const i = pm.response.json();",
+              "pm.collectionVariables.set('inscricaoId', i.id);",
+              "pm.test('Inscricao nasce ATIVA', () => pm.expect(i.situacao).to.eql('ATIVA'));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/inscricoes",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "inscricoes"
+          ]
+        },
+        "description": "",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"participanteId\": {{participanteId1}},\n  \"oficinaId\": {{oficinaId}}\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "3 - Conferir: oficina ficou com 0 vagas",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status 200', () => pm.response.to.have.status(200));",
+              "pm.test('vagasDisponiveis = 0', () => pm.expect(pm.response.json().vagasDisponiveis).to.eql(0));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/oficinas/{{oficinaId}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "oficinas",
+            "{{oficinaId}}"
+          ]
+        },
+        "description": ""
+      }
+    },
+    {
+      "name": "4 - Inscrever o participante 2 em oficina lotada (deve ser rejeitado)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status 409 (conflito: lotada)', () => pm.response.to.have.status(409));",
+              "pm.test('Mensagem explica que esta lotada', () => pm.expect(pm.response.json().mensagem).to.include('lotada'));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/inscricoes",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "inscricoes"
+          ]
+        },
+        "description": "",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"participanteId\": {{participanteId2}},\n  \"oficinaId\": {{oficinaId}}\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "5 - Conferir: a rejeicao nao alterou as vagas (continua 0)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('vagasDisponiveis continua 0 (nunca negativo)', () => pm.expect(pm.response.json().vagasDisponiveis).to.eql(0));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/oficinas/{{oficinaId}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "oficinas",
+            "{{oficinaId}}"
+          ]
+        },
+        "description": ""
+      }
+    },
+    {
+      "name": "6 - Cancelar a inscricao do participante 1",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status 200', () => pm.response.to.have.status(200));",
+              "pm.test('Situacao CANCELADA', () => pm.expect(pm.response.json().situacao).to.eql('CANCELADA'));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "PATCH",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/inscricoes/{{inscricaoId}}/cancelamento",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "inscricoes",
+            "{{inscricaoId}}",
+            "cancelamento"
+          ]
+        },
+        "description": ""
+      }
+    },
+    {
+      "name": "7 - Conferir: a vaga foi devolvida (1)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('vagasDisponiveis = 1', () => pm.expect(pm.response.json().vagasDisponiveis).to.eql(1));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/oficinas/{{oficinaId}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "oficinas",
+            "{{oficinaId}}"
+          ]
+        },
+        "description": ""
+      }
+    },
+    {
+      "name": "8 - Repetir o cancelamento (deve ser rejeitado)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status 409 (ja cancelada)', () => pm.response.to.have.status(409));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "PATCH",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/inscricoes/{{inscricaoId}}/cancelamento",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "inscricoes",
+            "{{inscricaoId}}",
+            "cancelamento"
+          ]
+        },
+        "description": ""
+      }
+    },
+    {
+      "name": "9 - Conferir: repetir o cancelamento NAO passou da capacidade (continua 1)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('vagasDisponiveis continua 1 (nunca acima da capacidade)', () => { const o = pm.response.json(); pm.expect(o.vagasDisponiveis).to.eql(1); pm.expect(o.vagasDisponiveis).to.be.at.most(o.capacidade); });"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/oficinas/{{oficinaId}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "oficinas",
+            "{{oficinaId}}"
+          ]
+        },
+        "description": ""
+      }
+    },
+    {
+      "name": "10 - Excluir oficina que ja tem historico (deve ser rejeitado)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status 409 (historico nao pode ser destruido)', () => pm.response.to.have.status(409));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/oficinas/{{oficinaId}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "oficinas",
+            "{{oficinaId}}"
+          ]
+        },
+        "description": ""
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080"
+    },
+    {
+      "key": "participanteId1",
+      "value": "1"
+    },
+    {
+      "key": "participanteId2",
+      "value": "2"
+    },
+    {
+      "key": "oficinaId",
+      "value": ""
+    },
+    {
+      "key": "inscricaoId",
+      "value": ""
+    }
+  ]
+}
