@@ -7,19 +7,17 @@ limitadas: registrar inscrição consome uma vaga, cancelar devolve a vaga, semp
 
 ## 1. Integrantes e responsabilidades
 
-> **[PREENCHER]** o sobrenome completo (se faltar) e o RA de cada integrante. A coluna "Parte" já está pronta.
-
 | Nº | Nome completo | RA | Parte (arquivos principais) |
 |---|---|---|---|
-| 1 | Carlos Henrique | [PREENCHER] | Configuração do projeto, conexão JDBC, credenciais externas, exceções |
-| 2 | Jeferson Santos | [PREENCHER] | Domínio (`Participante`, `Oficina`, `Inscricao`) e diagrama UML |
-| 3 | Lucas Vianna | [PREENCHER] | Participante (repository, service, controller) |
-| 4 | Luigi Lima | [PREENCHER] | Oficina — repository e service (CRUD e regras sobre histórico) |
-| 5 | Matheus Madeira | [PREENCHER] | Oficina — controller, DTOs e tratamento global de exceções (HTTP) |
-| 6 | Mileny | [PREENCHER] | Inscrição — repository e documento de transação/concorrência |
-| 7 | Pedro Guimarães | [PREENCHER] | Registrar inscrição (service e rotas `POST`/`GET /inscricoes`) |
-| 8 | Pedro Mendonça | [PREENCHER] | Cancelar inscrição (service e rota `PATCH`), testes e refatoração |
-| 9 | Ulisses | [PREENCHER] | Módulo de algoritmos, cenário próprio do Postman, README |
+| 1 | Carlos Henrique Silva de Souza | 5416191 | Configuração do projeto, conexão JDBC, credenciais externas, exceções |
+| 2 | Jeferson dos Santos Silva | 5385385 | Domínio (`Participante`, `Oficina`, `Inscricao`) e diagrama UML |
+| 3 | Lucas Viana da Silva | 5558743 | Participante (repository, service, controller) |
+| 4 | Luigi Toninatto Lima | 5436524 | Oficina — repository e service (CRUD e regras sobre histórico) |
+| 5 | Matheus Madeira Sanchez | 5381711 | Oficina — controller, DTOs e tratamento global de exceções (HTTP) |
+| 6 | Mileny Nazario | 5388872 | Inscrição — repository e documento de transação/concorrência |
+| 7 | Pedro Guimarães Arantes | 5410657 | Registrar inscrição (service e rotas `POST`/`GET /inscricoes`) |
+| 8 | Pedro Mendonça | 5497990 | Cancelar inscrição (service e rota `PATCH`), testes e refatoração |
+| 9 | Ullisses Jafeth Pedrosa de Morais | 5512846 | Módulo de algoritmos, cenário próprio do Postman, README |
 
 O histórico de commits e os Pull Requests de cada integrante estão no repositório Git do grupo.
 
@@ -36,7 +34,7 @@ mvn spring-boot:run
 mvn test
 ```
 
-Requisitos: JDK 17+, Maven 3.9+, PostgreSQL. A API sobe em `http://localhost:8080`.
+Requisitos: JDK 17+, Maven 3.9+, PostgreSQL (local ou no Supabase; veja [`docs/COMO_RODAR_COM_SUPABASE.md`](docs/COMO_RODAR_COM_SUPABASE.md)). A API sobe em `http://localhost:8080`.
 
 ## 3. Arquitetura
 
@@ -109,11 +107,10 @@ várias buscas binárias O(log n) supera várias buscas lineares O(n). Para pouc
 
 - **JUnit** (`mvn test`): regras do domínio, regras e transações dos services (com dublês), mapeamento
   exceção → HTTP e algoritmos.
-- **Postman — coleção oficial:** executada pelo Runner.
+- **Postman — coleção do contrato do Tema 2:** `postman/colecao-contrato.postman_collection.json`, executada pelo Runner (56 testes, 0 erros).
 - **Postman — cenário próprio:** `postman/cenario-proprio.postman_collection.json`.
 
-> **[ANEXAR]** em `docs/evidencias/`: print do `mvn test` com todos os testes passando, print do Runner da
-> coleção oficial e print do Runner do cenário próprio. Veja `docs/evidencias/LEIA-ME.md`.
+Evidências em `docs/evidencias/`: `mvn-test.png` (42 testes, 0 falhas), `postman-colecao-oficial.png` (coleção do contrato, 56 testes) e `postman-cenario-proprio.png` (15 de 15).
 
 ### Cenário próprio no Postman e por que é relevante
 
