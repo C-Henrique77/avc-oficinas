@@ -1,6 +1,7 @@
 package br.edu.avc.oficinas.service;
 
 import br.edu.avc.oficinas.config.ConnectionFactory;
+import br.edu.avc.oficinas.config.ExecutorTransacional;
 import br.edu.avc.oficinas.dominio.Inscricao;
 import br.edu.avc.oficinas.dominio.Oficina;
 import br.edu.avc.oficinas.excecao.DadosInvalidosException;
@@ -43,33 +44,22 @@ public class InscricaoService {
         if (participanteId == null || oficinaId == null) {
             throw new DadosInvalidosException("participanteId e oficinaId são obrigatórios");
         }
-        try (Connection conexao = connectionFactory.abrir()) {
-            conexao.setAutoCommit(false);
-            try {
-                participanteRepository.buscarPorId(conexao, participanteId)
-                        .orElseThrow(() -> new RecursoNaoEncontradoException(
-                                "Participante " + participanteId + " não encontrado"));
-                Oficina oficina = oficinaRepository.buscarPorIdTravando(conexao, oficinaId)
-                        .orElseThrow(() -> new RecursoNaoEncontradoException(
-                                "Oficina " + oficinaId + " não encontrada"));
+        return ExecutorTransacional.executar(connectionFactory, "Falha ao registrar inscrição", conexao -> {
+            participanteRepository.buscarPorId(conexao, participanteId)
+                    .orElseThrow(() -> new RecursoNaoEncontradoException(
+                            "Participante " + participanteId + " não encontrado"));
+            Oficina oficina = oficinaRepository.buscarPorIdTravando(conexao, oficinaId)
+                    .orElseThrow(() -> new RecursoNaoEncontradoException(
+                            "Oficina " + oficinaId + " não encontrada"));
 
-                if (inscricaoRepository.existeAtiva(conexao, participanteId, oficinaId)) {
-                    throw new DuplicidadeException("Participante já possui inscrição ativa nesta oficina");
-                }
-
-                oficina.reservarVaga(); // regra do dominio: falha se estiver lotada
-                oficinaRepository.atualizarVagas(conexao, oficina);
-                Inscricao salva = inscricaoRepository.inserir(conexao, Inscricao.nova(participanteId, oficinaId));
-
-                conexao.commit();
-                return salva;
-            } catch (RuntimeException | SQLException e) {
-                conexao.rollback();
-                throw e;
+            if (inscricaoRepository.existeAtiva(conexao, participanteId, oficinaId)) {
+                throw new DuplicidadeException("Participante já possui inscrição ativa nesta oficina");
             }
-        } catch (SQLException e) {
-            throw new ErroPersistenciaException("Falha ao registrar inscrição", e);
-        }
+
+            oficina.reservarVaga(); // regra do dominio: falha se estiver lotada
+            oficinaRepository.atualizarVagas(conexao, oficina);
+            return inscricaoRepository.inserir(conexao, Inscricao.nova(participanteId, oficinaId));
+        });
     }
 
     public List<Inscricao> listar() {
