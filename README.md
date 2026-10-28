@@ -121,15 +121,12 @@ cancelar+devolver são atômicos e que uma operação rejeitada não deixa alter
 
 ## 8. Refatoração registrada
 
-> **[CONFERIR e preencher o hash do commit]** — este texto só vale se a refatoração foi realmente aplicada
-> (instruções no guia de divisão do grupo, passo "Refatoração").
-
 - **Problema encontrado:** o bloco "abrir conexão → `setAutoCommit(false)` → executar → `commit` / `rollback`"
   estava copiado em quatro métodos (`InscricaoService.registrar`, `CancelamentoService.cancelar`,
   `OficinaService.atualizar` e `OficinaService.excluir`). Duplicação: corrigir um detalhe exigia mexer em quatro lugares
   e era fácil esquecer um `rollback`.
 - **Alteração:** extração da classe `ExecutorTransacional`, que recebe a operação (lambda) e cuida de abrir a conexão,
-  `commit`, `rollback` e fechamento. Os services passam a conter só a regra de negócio. Commit: **[HASH]**.
+  `commit`, `rollback` e fechamento. Os services passam a conter só a regra de negócio. Commit: `b6d30e1`.
 - **Teste que validou:** `InscricaoServiceTest`, `CancelamentoServiceTest` e `OficinaServiceTest` (verificam
   `commit` no sucesso e `rollback` nos erros) passaram antes e depois, sem alteração nos testes.
 
@@ -144,6 +141,3 @@ Utilizamos uma ferramenta de IA generativa como **apoio** ao desenvolvimento, em
 estrutura do projeto, da documentação e do roteiro da demonstração. A divisão das tarefas, a revisão, a execução e a
 validação foram feitas pelo grupo: cada integrante leu, executou e testou a sua parte e é capaz de explicar o que ela
 faz e por quê. As decisões finais sobre o que entrou no projeto foram nossas.
-
-> **[CONFIRMAR]** antes de entregar: esta declaração precisa ser verdadeira para todos os integrantes. Se alguém
-> ainda não entende a sua parte, estude (cada `LEIA-ME-PESSOA-XX.md` tem uma cola de estudo) antes de gravar o vídeo.
