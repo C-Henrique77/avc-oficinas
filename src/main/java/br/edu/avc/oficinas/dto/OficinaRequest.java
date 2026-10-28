@@ -1,5 +1,5 @@
 package br.edu.avc.oficinas.dto;
 
-//** Corpo das requisiçoes POST /oficinas e PUT /oficinas{id}. */
-public record OficinasRequest(String titulo, Interger capacidade) {
-  }
+/** Corpo das requisicoes POST /oficinas e PUT /oficinas/{id}. */
+public record OficinaRequest(String titulo, Integer capacidade) {
+}
