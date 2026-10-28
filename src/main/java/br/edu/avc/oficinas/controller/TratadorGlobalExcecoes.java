@@ -71,7 +71,7 @@ public class TratadorGlobalExcecoes {
 
 
     private ResponseEntity<ErroResposta> resposta(HttpStatus status, String mensagem) {
-        ErroResposta erro = new ErroResposta(status.value(), mensagem);
+        ErroResposta erro = new ErroResposta(status.value(), status.getReasonPhrase(), mensagem);
         return ResponseEntity.status(status).body(erro);
     }
 }
