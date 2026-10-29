@@ -21,7 +21,7 @@ import java.util.Optional;
 public class ParticipanteRepository {
 
     public List<Participante> listar(Connection conexao) {
-        String sql = "SELECT id, nome, email FROM participantes ORDER BY id";
+        String sql = "SELECT id, nome, email FROM participante ORDER BY id";
         try (PreparedStatement ps = conexao.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {
             List<Participante> participantes = new ArrayList<>();
@@ -35,7 +35,7 @@ public class ParticipanteRepository {
     }
 
     public Optional<Participante> buscarPorId(Connection conexao, long id) {
-        String sql = "SELECT id, nome, email FROM participantes WHERE id = ?";
+        String sql = "SELECT id, nome, email FROM participante WHERE id = ?";
         try (PreparedStatement ps = conexao.prepareStatement(sql)) {
             ps.setLong(1, id);
             try (ResultSet rs = ps.executeQuery()) {
