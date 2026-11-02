@@ -1,6 +1,7 @@
 package br.edu.avc.oficinas.service;
 
 import br.edu.avc.oficinas.config.ConnectionFactory;
+import br.edu.avc.oficinas.config.ExecutorTransacional;
 import br.edu.avc.oficinas.dominio.Oficina;
 import br.edu.avc.oficinas.excecao.DadosInvalidosException;
 import br.edu.avc.oficinas.excecao.ErroPersistenciaException;
@@ -67,52 +68,34 @@ public class OficinaService {
         if (capacidade == null) {
             throw new DadosInvalidosException("Capacidade é obrigatória");
         }
-        try (Connection conexao = connectionFactory.abrir()) {
-            conexao.setAutoCommit(false);
-            try {
-                Oficina oficina = oficinaRepository.buscarPorIdTravando(conexao, id)
-                        .orElseThrow(() -> new RecursoNaoEncontradoException("Oficina " + id + " não encontrada"));
-                boolean temHistorico = inscricaoRepository.contarPorOficina(conexao, id) > 0;
+        return ExecutorTransacional.executar(connectionFactory, "Falha ao atualizar oficina", conexao -> {
+            Oficina oficina = oficinaRepository.buscarPorIdTravando(conexao, id)
+                    .orElseThrow(() -> new RecursoNaoEncontradoException("Oficina " + id + " não encontrada"));
+            boolean temHistorico = inscricaoRepository.contarPorOficina(conexao, id) > 0;
 
-                if (temHistorico && capacidade != oficina.getCapacidade()) {
-                    throw new RegraNegocioException(
-                            "A capacidade não pode ser alterada após existir histórico de inscrições");
-                }
-                oficina.atualizarTitulo(titulo);
-                if (!temHistorico) {
-                    oficina.redefinirCapacidade(capacidade);
-                }
-                oficinaRepository.atualizar(conexao, oficina);
-                conexao.commit();
-                return oficina;
-            } catch (RuntimeException | SQLException e) {
-                conexao.rollback();
-                throw e;
+            if (temHistorico && capacidade != oficina.getCapacidade()) {
+                throw new RegraNegocioException(
+                        "A capacidade não pode ser alterada após existir histórico de inscrições");
             }
-        } catch (SQLException e) {
-            throw new ErroPersistenciaException("Falha ao atualizar oficina", e);
-        }
+            oficina.atualizarTitulo(titulo);
+            if (!temHistorico) {
+                oficina.redefinirCapacidade(capacidade);
+            }
+            oficinaRepository.atualizar(conexao, oficina);
+            return oficina;
+        });
     }
 
     /** Exclui a oficina somente se nunca teve inscricoes (o historico nao pode ser destruido). */
     public void excluir(long id) {
-        try (Connection conexao = connectionFactory.abrir()) {
-            conexao.setAutoCommit(false);
-            try {
-                oficinaRepository.buscarPorIdTravando(conexao, id)
-                        .orElseThrow(() -> new RecursoNaoEncontradoException("Oficina " + id + " não encontrada"));
-                if (inscricaoRepository.contarPorOficina(conexao, id) > 0) {
-                    throw new RegraNegocioException(
-                            "Oficina com histórico de inscrições não pode ser excluída");
-                }
-                oficinaRepository.excluir(conexao, id);
-                conexao.commit();
-            } catch (RuntimeException | SQLException e) {
-                conexao.rollback();
-                throw e;
+        ExecutorTransacional.executar(connectionFactory, "Falha ao excluir oficina", conexao -> {
+            oficinaRepository.buscarPorIdTravando(conexao, id)
+                    .orElseThrow(() -> new RecursoNaoEncontradoException("Oficina " + id + " não encontrada"));
+            if (inscricaoRepository.contarPorOficina(conexao, id) > 0) {
+                throw new RegraNegocioException("Oficina com histórico de inscrições não pode ser excluída");
             }
-        } catch (SQLException e) {
-            throw new ErroPersistenciaException("Falha ao excluir oficina", e);
-        }
+            oficinaRepository.excluir(conexao, id);
+            return null;
+        });
     }
 }

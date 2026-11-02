@@ -1,0 +1,1282 @@
+{
+  "info": {
+    "name": "AVC Oficinas - Colecao do grupo (contrato do Tema 2)",
+    "description": "Colecao montada pelo grupo a partir do contrato minimo e dos cenarios de aceitacao do Tema 2 do enunciado. Cobre as 10 rotas e os 5 cenarios de aceitacao (inscrever com vaga, lotada, repetir inscricao ativa, participante inexistente, cancelar e cancelar de novo), conferindo as vagas a cada passo.\n\nPre-requisitos: API em http://localhost:8080 e banco oficial carregado (participantes de id 1 e 2). Rode a colecao inteira pelo Runner, em ordem (as pastas dependem umas das outras).",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "1 - Participantes (GET /participantes)",
+      "item": [
+        {
+          "name": "GET /participantes - listar",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200 (OK)', () => pm.response.to.have.status(200));",
+                  "const l = pm.response.json();",
+                  "pm.test('Devolve uma lista com participantes', () => { pm.expect(l).to.be.an('array'); pm.expect(l.length).to.be.at.least(2); });",
+                  "pm.test('Cada item tem id, nome e email', () => { const p = l[0]; pm.expect(p).to.have.property('id'); pm.expect(p).to.have.property('nome'); pm.expect(p).to.have.property('email'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/participantes",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "participantes"
+              ]
+            },
+            "description": ""
+          }
+        },
+        {
+          "name": "GET /participantes/{id} - consultar existente",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200 (OK)', () => pm.response.to.have.status(200));",
+                  "pm.test('Devolve o participante pedido', () => { const p = pm.response.json(); pm.expect(String(p.id)).to.eql(pm.collectionVariables.get('participanteId1')); pm.expect(p.nome).to.be.a('string'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/participantes/{{participanteId1}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "participantes",
+                "{{participanteId1}}"
+              ]
+            },
+            "description": ""
+          }
+        },
+        {
+          "name": "GET /participantes/{id} - inexistente (404)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 404 (nao encontrado)', () => pm.response.to.have.status(404));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/participantes/999999",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "participantes",
+                "999999"
+              ]
+            },
+            "description": ""
+          }
+        },
+        {
+          "name": "GET /participantes/{id} - id invalido (400)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 400 (id invalido)', () => pm.response.to.have.status(400));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/participantes/abc",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "participantes",
+                "abc"
+              ]
+            },
+            "description": ""
+          }
+        }
+      ]
+    },
+    {
+      "name": "2 - Oficinas (POST, GET, PUT, DELETE /oficinas)",
+      "item": [
+        {
+          "name": "POST /oficinas - cadastrar",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 201 (criada)', () => pm.response.to.have.status(201));",
+                  "const o = pm.response.json(); pm.collectionVariables.set('oficinaCrudId', o.id);",
+                  "pm.test('Nasce com todas as vagas livres (3 de 3)', () => { pm.expect(o.titulo).to.eql('Oficina de CRUD (Postman)'); pm.expect(o.capacidade).to.eql(3); pm.expect(o.vagasDisponiveis).to.eql(3); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/oficinas",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "oficinas"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"titulo\": \"Oficina de CRUD (Postman)\",\n  \"capacidade\": 3\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "POST /oficinas - capacidade zero (400)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 400 (dados invalidos)', () => pm.response.to.have.status(400));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/oficinas",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "oficinas"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"titulo\": \"Oficina invalida\",\n  \"capacidade\": 0\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "POST /oficinas - titulo vazio (400)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 400 (dados invalidos)', () => pm.response.to.have.status(400));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/oficinas",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "oficinas"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"titulo\": \"\",\n  \"capacidade\": 5\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "GET /oficinas - listar",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200 (OK)', () => pm.response.to.have.status(200));",
+                  "pm.test('Lista contem a oficina criada', () => { const l = pm.response.json(); pm.expect(l).to.be.an('array'); pm.expect(l.some(o => String(o.id) === String(pm.collectionVariables.get('oficinaCrudId')))).to.be.true; });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/oficinas",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "oficinas"
+              ]
+            },
+            "description": ""
+          }
+        },
+        {
+          "name": "GET /oficinas/{id} - consultar",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200 (OK)', () => pm.response.to.have.status(200));",
+                  "pm.test('Devolve a oficina pedida', () => { const o = pm.response.json(); pm.expect(o.titulo).to.eql('Oficina de CRUD (Postman)'); pm.expect(o.capacidade).to.eql(3); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/oficinas/{{oficinaCrudId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "oficinas",
+                "{{oficinaCrudId}}"
+              ]
+            },
+            "description": ""
+          }
+        },
+        {
+          "name": "GET /oficinas/{id} - inexistente (404)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 404 (nao encontrada)', () => pm.response.to.have.status(404));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/oficinas/999999",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "oficinas",
+                "999999"
+              ]
+            },
+            "description": ""
+          }
+        },
+        {
+          "name": "PUT /oficinas/{id} - sem historico: altera titulo e capacidade",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200 (OK)', () => pm.response.to.have.status(200));",
+                  "pm.test('Titulo e capacidade atualizados; vagas acompanham', () => { const o = pm.response.json(); pm.expect(o.titulo).to.eql('Oficina de CRUD editada'); pm.expect(o.capacidade).to.eql(4); pm.expect(o.vagasDisponiveis).to.eql(4); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/oficinas/{{oficinaCrudId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "oficinas",
+                "{{oficinaCrudId}}"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"titulo\": \"Oficina de CRUD editada\",\n  \"capacidade\": 4\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "PUT /oficinas/{id} - inexistente (404)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 404 (nao encontrada)', () => pm.response.to.have.status(404));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/oficinas/999999",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "oficinas",
+                "999999"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"titulo\": \"Qualquer\",\n  \"capacidade\": 2\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "DELETE /oficinas/{id} - sem historico (204)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 204 (sem conteudo)', () => pm.response.to.have.status(204));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/oficinas/{{oficinaCrudId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "oficinas",
+                "{{oficinaCrudId}}"
+              ]
+            },
+            "description": ""
+          }
+        },
+        {
+          "name": "GET /oficinas/{id} - apos excluir (404)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 404 (foi excluida)', () => pm.response.to.have.status(404));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/oficinas/{{oficinaCrudId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "oficinas",
+                "{{oficinaCrudId}}"
+              ]
+            },
+            "description": ""
+          }
+        }
+      ]
+    },
+    {
+      "name": "3 - Inscricoes e cenarios de aceitacao (POST/GET /inscricoes, PATCH cancelamento)",
+      "item": [
+        {
+          "name": "0 - Preparar: cadastrar oficina de 1 vaga",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 201 (criada)', () => pm.response.to.have.status(201));",
+                  "pm.collectionVariables.set('oficinaAceiteId', pm.response.json().id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/oficinas",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "oficinas"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"titulo\": \"Oficina dos cenarios de aceitacao\",\n  \"capacidade\": 1\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "1 - Inscrever com vaga disponivel: cria inscricao e reduz 1 vaga",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 201 (criada)', () => pm.response.to.have.status(201));",
+                  "const i = pm.response.json(); pm.collectionVariables.set('inscricaoAId', i.id);",
+                  "pm.test('Inscricao nasce ATIVA', () => pm.expect(i.situacao).to.eql('ATIVA'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/inscricoes",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "inscricoes"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"participanteId\": {{participanteId1}},\n  \"oficinaId\": {{oficinaAceiteId}}\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "1b - Conferir: oficina ficou com 0 vagas",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200 (OK)', () => pm.response.to.have.status(200));",
+                  "pm.test('vagasDisponiveis = 0', () => { const o = pm.response.json(); pm.expect(o.vagasDisponiveis).to.eql(0); pm.expect(o.vagasDisponiveis).to.be.within(0, o.capacidade); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/oficinas/{{oficinaAceiteId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "oficinas",
+                "{{oficinaAceiteId}}"
+              ]
+            },
+            "description": ""
+          }
+        },
+        {
+          "name": "2 - Inscrever em oficina lotada: rejeita (409) e mantem as vagas",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 409 (lotada)', () => pm.response.to.have.status(409));",
+                  "pm.test('Mensagem diz que esta lotada', () => pm.expect(pm.response.json().mensagem).to.include('lotada'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/inscricoes",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "inscricoes"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"participanteId\": {{participanteId2}},\n  \"oficinaId\": {{oficinaAceiteId}}\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "2b - Conferir: continua com 0 vagas (nunca negativo)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200 (OK)', () => pm.response.to.have.status(200));",
+                  "pm.test('vagasDisponiveis = 0', () => { const o = pm.response.json(); pm.expect(o.vagasDisponiveis).to.eql(0); pm.expect(o.vagasDisponiveis).to.be.within(0, o.capacidade); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/oficinas/{{oficinaAceiteId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "oficinas",
+                "{{oficinaAceiteId}}"
+              ]
+            },
+            "description": ""
+          }
+        },
+        {
+          "name": "3 - Repetir inscricao ativa: rejeita duplicidade (409) sem consumir vaga",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 409 (duplicidade)', () => pm.response.to.have.status(409));",
+                  "pm.test('Mensagem fala de inscricao ativa', () => pm.expect(pm.response.json().mensagem).to.include('inscrição ativa'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/inscricoes",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "inscricoes"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"participanteId\": {{participanteId1}},\n  \"oficinaId\": {{oficinaAceiteId}}\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "3b - Conferir: continua com 0 vagas",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200 (OK)', () => pm.response.to.have.status(200));",
+                  "pm.test('vagasDisponiveis = 0', () => { const o = pm.response.json(); pm.expect(o.vagasDisponiveis).to.eql(0); pm.expect(o.vagasDisponiveis).to.be.within(0, o.capacidade); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/oficinas/{{oficinaAceiteId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "oficinas",
+                "{{oficinaAceiteId}}"
+              ]
+            },
+            "description": ""
+          }
+        },
+        {
+          "name": "4 - Participante inexistente: rejeita (404) sem alterar a oficina",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 404 (participante nao existe)', () => pm.response.to.have.status(404));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/inscricoes",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "inscricoes"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"participanteId\": 999999,\n  \"oficinaId\": {{oficinaAceiteId}}\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "4b - Conferir: oficina intacta (0 vagas)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200 (OK)', () => pm.response.to.have.status(200));",
+                  "pm.test('vagasDisponiveis = 0', () => { const o = pm.response.json(); pm.expect(o.vagasDisponiveis).to.eql(0); pm.expect(o.vagasDisponiveis).to.be.within(0, o.capacidade); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/oficinas/{{oficinaAceiteId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "oficinas",
+                "{{oficinaAceiteId}}"
+              ]
+            },
+            "description": ""
+          }
+        },
+        {
+          "name": "4c - Oficina inexistente: rejeita (404)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 404 (oficina nao existe)', () => pm.response.to.have.status(404));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/inscricoes",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "inscricoes"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"participanteId\": {{participanteId1}},\n  \"oficinaId\": 999999\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "5 - Cancelar a inscricao: devolve 1 vaga",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200 (OK)', () => pm.response.to.have.status(200));",
+                  "pm.test('Situacao CANCELADA', () => pm.expect(pm.response.json().situacao).to.eql('CANCELADA'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/inscricoes/{{inscricaoAId}}/cancelamento",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "inscricoes",
+                "{{inscricaoAId}}",
+                "cancelamento"
+              ]
+            },
+            "description": ""
+          }
+        },
+        {
+          "name": "5b - Conferir: vaga devolvida (1)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200 (OK)', () => pm.response.to.have.status(200));",
+                  "pm.test('vagasDisponiveis = 1', () => { const o = pm.response.json(); pm.expect(o.vagasDisponiveis).to.eql(1); pm.expect(o.vagasDisponiveis).to.be.within(0, o.capacidade); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/oficinas/{{oficinaAceiteId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "oficinas",
+                "{{oficinaAceiteId}}"
+              ]
+            },
+            "description": ""
+          }
+        },
+        {
+          "name": "5c - Cancelar novamente: rejeita (409)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 409 (ja cancelada)', () => pm.response.to.have.status(409));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/inscricoes/{{inscricaoAId}}/cancelamento",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "inscricoes",
+                "{{inscricaoAId}}",
+                "cancelamento"
+              ]
+            },
+            "description": ""
+          }
+        },
+        {
+          "name": "5d - Conferir: nao passou da capacidade (continua 1)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200 (OK)', () => pm.response.to.have.status(200));",
+                  "pm.test('vagasDisponiveis = 1 e nunca acima da capacidade', () => { const o = pm.response.json(); pm.expect(o.vagasDisponiveis).to.eql(1); pm.expect(o.vagasDisponiveis).to.be.within(0, o.capacidade); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/oficinas/{{oficinaAceiteId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "oficinas",
+                "{{oficinaAceiteId}}"
+              ]
+            },
+            "description": ""
+          }
+        },
+        {
+          "name": "5e - Cancelar inscricao inexistente (404)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 404 (nao encontrada)', () => pm.response.to.have.status(404));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/inscricoes/999999/cancelamento",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "inscricoes",
+                "999999",
+                "cancelamento"
+              ]
+            },
+            "description": ""
+          }
+        },
+        {
+          "name": "6 - Nova inscricao apos cancelamento gera NOVO registro",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 201 (criada)', () => pm.response.to.have.status(201));",
+                  "const i = pm.response.json(); pm.collectionVariables.set('inscricaoBId', i.id);",
+                  "pm.test('E um registro novo (id diferente do cancelado)', () => pm.expect(String(i.id)).to.not.eql(String(pm.collectionVariables.get('inscricaoAId'))));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/inscricoes",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "inscricoes"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"participanteId\": {{participanteId1}},\n  \"oficinaId\": {{oficinaAceiteId}}\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "6b - GET /inscricoes: historico guarda a cancelada e a ativa",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200 (OK)', () => pm.response.to.have.status(200));",
+                  "const l = pm.response.json().filter(i => String(i.oficinaId) === String(pm.collectionVariables.get('oficinaAceiteId')));",
+                  "pm.test('Duas inscricoes da oficina no historico', () => pm.expect(l.length).to.eql(2));",
+                  "pm.test('Uma CANCELADA e uma ATIVA', () => { pm.expect(l.filter(i => i.situacao === 'CANCELADA').length).to.eql(1); pm.expect(l.filter(i => i.situacao === 'ATIVA').length).to.eql(1); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/inscricoes",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "inscricoes"
+              ]
+            },
+            "description": ""
+          }
+        },
+        {
+          "name": "7 - PUT com historico: alterar a CAPACIDADE e rejeitado (409)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 409 (capacidade travada)', () => pm.response.to.have.status(409));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/oficinas/{{oficinaAceiteId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "oficinas",
+                "{{oficinaAceiteId}}"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"titulo\": \"Oficina dos cenarios de aceitacao\",\n  \"capacidade\": 5\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "7b - PUT com historico: alterar so o TITULO e permitido (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200 (OK)', () => pm.response.to.have.status(200));",
+                  "pm.test('Titulo mudou e capacidade continua 1', () => { const o = pm.response.json(); pm.expect(o.titulo).to.eql('Oficina dos cenarios (titulo editado)'); pm.expect(o.capacidade).to.eql(1); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/oficinas/{{oficinaAceiteId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "oficinas",
+                "{{oficinaAceiteId}}"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"titulo\": \"Oficina dos cenarios (titulo editado)\",\n  \"capacidade\": 1\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "8 - DELETE com historico: rejeitado (409)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 409 (tem historico)', () => pm.response.to.have.status(409));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/oficinas/{{oficinaAceiteId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "oficinas",
+                "{{oficinaAceiteId}}"
+              ]
+            },
+            "description": ""
+          }
+        },
+        {
+          "name": "8b - Conferir: a oficina continua existindo",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200 (OK)', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/oficinas/{{oficinaAceiteId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "oficinas",
+                "{{oficinaAceiteId}}"
+              ]
+            },
+            "description": ""
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080"
+    },
+    {
+      "key": "participanteId1",
+      "value": "1"
+    },
+    {
+      "key": "participanteId2",
+      "value": "2"
+    },
+    {
+      "key": "oficinaCrudId",
+      "value": ""
+    },
+    {
+      "key": "oficinaAceiteId",
+      "value": ""
+    },
+    {
+      "key": "inscricaoAId",
+      "value": ""
+    },
+    {
+      "key": "inscricaoBId",
+      "value": ""
+    }
+  ]
+}
